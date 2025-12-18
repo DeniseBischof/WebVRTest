@@ -160,8 +160,10 @@
     embedded
   >
     <a-assets>
-      <audio id="jinglebells" preload="auto" crossorigin="anonymous"
-        src="https://upload.wikimedia.org/wikipedia/commons/4/4e/JingleBells-Instrumental-.ogg"></audio>
+      <audio id="jinglebells" preload="auto" crossorigin="anonymous" src="https://upload.wikimedia.org/wikipedia/commons/4/4e/JingleBells-Instrumental-.ogg"></audio>
+      <img id="giftIcon" crossorigin="anonymous" src="https://twemoji.maxcdn.com/v/latest/svg/1f381.svg">
+      <img id="sparklesIcon" crossorigin="anonymous" src="https://twemoji.maxcdn.com/v/latest/svg/2728.svg">
+
     </a-assets>
 
     <a-sky color="#000000"></a-sky>
@@ -213,26 +215,20 @@
     animation__float="property: position; dir: alternate; dur: 1600; easing: easeInOutSine; loop: true; to: 0 0.05 0"
     animation__pulse="property: scale; dir: alternate; dur: 1200; easing: easeInOutSine; loop: true; to: 1.05 1.05 1.05"
   >
-    <a-text
-      value="Merry Christmas Mama"
-      align="center"
-      anchor="center"
-      baseline="center"
-      width="7.5"
-      color="#0b5d1e"
-      position="0 0.05 0"
-    ></a-text>
 
-    <a-text
-      value="🎁✨"
-      align="center"
-      anchor="center"
-      baseline="center"
-      width="6"
-      color="#ffffff"
-      position="0 -0.38 0"
-      animation="property: rotation; dur: 3000; easing: linear; loop: true; to: 0 360 0"
-    ></a-text>
+  <a-entity
+    position="0 0.05 0"
+    text="value: Merry Christmas; align: center; anchor: center; baseline: center; width: 7.5; color: #0b5d1e;"
+    animation__float="property: position; dir: alternate; dur: 1600; easing: easeInOutSine; loop: true; to: 0 0.12 0"
+    animation__pulse="property: scale; dir: alternate; dur: 1200; easing: easeInOutSine; loop: true; to: 1.06 1.06 1.06"
+  ></a-entity>
+
+  <a-entity position="0 -0.38 0">
+    <a-image src="#giftIcon" width="0.35" height="0.35" position="-0.22 0 0"></a-image>
+    <a-image src="#sparklesIcon" width="0.35" height="0.35" position="0.22 0 0" animation="property: rotation; dur: 3000; easing: linear; loop: true; to: 0 360 0">
+  </a-image>
+
+
   </a-entity>
 
 </a-entity>
