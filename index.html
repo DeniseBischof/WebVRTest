@@ -192,17 +192,18 @@ AFRAME.registerComponent('fix-materials', {
 });
 
 AFRAME.registerComponent('ground-gltf', {
+  schema: { y: { type: 'number', default: 0 } }, // Zielbodenhöhe (optional)
+
   init() {
     this.el.addEventListener('model-loaded', () => {
-      const mesh = this.el.getObject3D('mesh');
-      if (!mesh) return;
+      const obj = this.el.object3D;
+      obj.updateWorldMatrix(true, true);
 
-      // Bounding Box berechnen
-      const box = new THREE.Box3().setFromObject(mesh);
+      const box = new THREE.Box3().setFromObject(obj);
       const minY = box.min.y;
 
-      // So verschieben, dass "unten" auf y=0 liegt
-      mesh.position.y -= minY;
+      // minY ist Welt-Y. Position verschieben (Position wird nicht mit eigener Scale multipliziert)
+      obj.position.y += (this.data.y - minY);
     });
   }
 });
@@ -238,13 +239,9 @@ AFRAME.registerComponent('ground-gltf', {
   <a-entity
     gltf-model="#snowmanModel"
     fix-materials
-    ground-gltf
+      ground-gltf="y: 0"
     scale="12 12 12">
   </a-entity>
-
-</a-entity>
-
-
 
   <!-- SCHNEE -->
   <a-entity snow></a-entity>
