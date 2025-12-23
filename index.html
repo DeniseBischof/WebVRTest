@@ -78,33 +78,27 @@
 
 AFRAME.registerComponent('snowman-ai', {
   schema: {
-    radius: { default: 4 },
-    speed:  { default: 0.6 }
+    radius: { type: 'number', default: 10 },   // Laufgebiet
+    speed:  { type: 'number', default: 0.8 },  // m/s
+    minDist:{ type: 'number', default: 4 }     // NIE näher als 4m
   },
 
   init() {
     this.camera = document.querySelector('[camera]');
-    this.velocity = new THREE.Vector3();
-    this.pickTarget();
-
-    // FIX: force opaque materials
-    this.el.addEventListener('model-loaded', e => {
-      e.detail.model.traverse(n => {
-        if (n.material) {
-          n.material.transparent = false;
-          n.material.opacity = 1;
-          n.material.depthWrite = true;
-        }
-      });
-    });
+    this.target = new THREE.Vector3();
+    this.tmp = new THREE.Vector3();
+    this.pickNewTarget();
   },
 
-  pickTarget() {
+  pickNewTarget() {
     const r = this.data.radius;
-    this.target = new THREE.Vector3(
-      (Math.random() - 0.5) * r * 2,
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = this.data.minDist + Math.random() * (r - this.data.minDist);
+
+    this.target.set(
+      Math.cos(angle) * dist,
       this.el.object3D.position.y,
-      (Math.random() - 0.5) * r * 2
+      Math.sin(angle) * dist
     );
   },
 
@@ -114,22 +108,38 @@ AFRAME.registerComponent('snowman-ai', {
     const dt = delta / 1000;
     const obj = this.el.object3D;
 
-    // REAL movement (not lerp hell)
-    const dir = new THREE.Vector3().subVectors(this.target, obj.position);
-    const dist = dir.length();
+    // moveTowards
+    this.tmp.copy(this.target).sub(obj.position);
+    const distance = this.tmp.length();
 
-    if (dist < 0.3) {
-      this.pickTarget();
-    } else {
-      dir.normalize();
-      obj.position.addScaledVector(dir, dt * this.data.speed);
+    if (distance < 0.2) {
+      this.pickNewTarget();
+      return;
     }
 
-    // Look at player (Y only = no nausea)
+    this.tmp.normalize();
+    obj.position.addScaledVector(this.tmp, this.data.speed * dt);
+
+    // Look at player
     const camPos = new THREE.Vector3();
     this.camera.object3D.getWorldPosition(camPos);
     camPos.y = obj.position.y;
     obj.lookAt(camPos);
+  }
+});
+
+AFRAME.registerComponent('fix-materials', {
+  init() {
+    this.el.addEventListener('model-loaded', () => {
+      this.el.object3D.traverse(obj => {
+        if (obj.isMesh && obj.material) {
+          obj.material.transparent = false;
+          obj.material.opacity = 1;
+          obj.material.depthWrite = true;
+          obj.material.needsUpdate = true;
+        }
+      });
+    });
   }
 });
   </script>
@@ -159,13 +169,14 @@ AFRAME.registerComponent('snowman-ai', {
   </a-entity>
   
   <!-- SCHNEEMANN ;) -->
-  <a-entity
-    id="snowman"
-    gltf-model="#snowmanModel"
-    position="0 0 -2"
-    scale="3 3 3"
-    snowman-ai>
-  </a-entity>
+<a-entity
+  gltf-model="#snowmanModel"
+  fix-materials
+  position="0 0 -8"
+  scale="12 12 12"
+  snowman-ai="radius: 12; speed: 0.9; minDist: 5">
+</a-entity>
+
 
   <!-- SCHNEE -->
   <a-entity snow></a-entity>
