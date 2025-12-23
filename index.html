@@ -8,7 +8,6 @@
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://unpkg.com/aframe-troika-text/dist/aframe-troika-text.min.js"></script>
 
-
   <style>
     html, body {
       margin: 0;
@@ -88,7 +87,6 @@ AFRAME.registerComponent('snow', {
 ========================= */
 window.addEventListener("DOMContentLoaded", () => {
   const startBtn = document.getElementById("start");
-
   if (!startBtn) return;
 
   startBtn.onclick = () => {
@@ -98,9 +96,7 @@ window.addEventListener("DOMContentLoaded", () => {
     if (scene?.enterVR) scene.enterVR();
 
     const bgm = document.querySelector("#bgm");
-    if (bgm?.components?.sound) {
-      bgm.components.sound.playSound();
-    }
+    if (bgm?.components?.sound) bgm.components.sound.playSound();
   };
 });
 
@@ -119,19 +115,11 @@ AFRAME.registerComponent('snowman-ai', {
     this.target = new THREE.Vector3();
     this.velocity = new THREE.Vector3();
 
-    // Kamera zuverlässig bekommen:
     const scene = this.el.sceneEl;
-
     const setCam = (camEl) => { this.cameraEl = camEl; };
 
-    scene.addEventListener('camera-set-active', (e) => {
-      setCam(e.detail.cameraEl);
-    });
-
-    scene.addEventListener('loaded', () => {
-      // Fallback: irgendeine Kamera im DOM
-      setCam(scene.querySelector('[camera]') || scene.querySelector('a-camera'));
-    });
+    scene.addEventListener('camera-set-active', (e) => setCam(e.detail.cameraEl));
+    scene.addEventListener('loaded', () => setCam(scene.querySelector('[camera]') || scene.querySelector('a-camera')));
 
     this.pickNewTarget();
   },
@@ -141,7 +129,6 @@ AFRAME.registerComponent('snowman-ai', {
     const a = Math.random() * Math.PI * 2;
     const d = this.data.minDist + Math.random() * (r - this.data.minDist);
 
-    // Ziel relativ zur aktuellen Position (wirkt natürlicher)
     const obj = this.el.object3D;
     this.target.set(
       obj.position.x + Math.cos(a) * d,
@@ -167,13 +154,13 @@ AFRAME.registerComponent('snowman-ai', {
     this.velocity.normalize();
     obj.position.addScaledVector(this.velocity, this.data.speed * dt);
 
-    // Spieler anschauen
     const camPos = new THREE.Vector3();
     this.cameraEl.object3D.getWorldPosition(camPos);
     camPos.y = obj.position.y;
     obj.lookAt(camPos);
   }
 });
+
 
 /* =========================
    🧱 FIX GLB MATERIAL
@@ -193,41 +180,67 @@ AFRAME.registerComponent('fix-materials', {
   }
 });
 
+
+/* =========================
+   🧍‍♂️ GLB AUF "FÜSSE" SETZEN
+   (macht, dass der Snowman-Pivot unten ist)
+========================= */
 AFRAME.registerComponent('ground-gltf', {
   schema: { y: { type: 'number', default: 0 } },
 
   init() {
     this.el.addEventListener('model-loaded', () => {
       const obj = this.el.object3D;
-
-      // safe in allen THREE-Versionen
       obj.updateMatrixWorld(true);
 
       const box = new THREE.Box3().setFromObject(obj);
       const minY = box.min.y;
 
-      // Welt-Y auf Zielboden bringen
       obj.position.y += (this.data.y - minY);
-      console.log("minY", minY, "posY after", obj.position.y);
     });
   }
 });
 
-AFRAME.registerComponent('billboard-y', {
+
+/* =========================
+   ✅ SCHNEEMANN AUF ECHTEN BODEN (RAYCAST)
+   setzt den WRAPPER (snowman) auf die Bodenhöhe
+========================= */
+AFRAME.registerComponent('snap-to-scene-floor', {
+  schema: {
+    worldId: { type: 'string', default: 'world' },
+    height:  { type: 'number', default: 30 },
+    offset:  { type: 'number', default: 0.02 }
+  },
+
+  init() {
+    this.raycaster = new THREE.Raycaster();
+    this.down = new THREE.Vector3(0, -1, 0);
+    this.worldEl = null;
+
+    this.el.sceneEl.addEventListener('loaded', () => {
+      this.worldEl = document.getElementById(this.data.worldId);
+    });
+  },
+
   tick() {
-    const cam = this.el.sceneEl.camera;
-    if (!cam) return;
+    if (!this.worldEl) return;
+
+    const worldObj = this.worldEl.object3D;
+    if (!worldObj) return;
 
     const obj = this.el.object3D;
-    const camPos = new THREE.Vector3();
-    cam.getWorldPosition(camPos);
 
-    // nur um Y drehen (damit es nicht komisch kippt)
-    camPos.y = obj.position.y;
-    obj.lookAt(camPos);
+    // Ray von oben an aktueller X/Z Position nach unten
+    const origin = new THREE.Vector3(obj.position.x, obj.position.y + this.data.height, obj.position.z);
+    this.raycaster.set(origin, this.down);
+
+    const hits = this.raycaster.intersectObject(worldObj, true);
+    if (!hits.length) return;
+
+    obj.position.y = hits[0].point.y + this.data.offset;
   }
 });
-
 </script>
 
 </head>
@@ -251,74 +264,72 @@ AFRAME.registerComponent('billboard-y', {
   <a-entity light="type: ambient; intensity: 0.7; color: #fff"></a-entity>
   <a-entity light="type: directional; intensity: 0.9; color: #fff" position="2 6 3"></a-entity>
 
-
   <!-- DIE SZENE -->
   <a-entity
+    id="world"
     gltf-model="#sceneGLB"
     position="0 0 0"
     rotation="0 0 0"
     scale="1 1 1">
   </a-entity>
 
-  <!-- Weihnachts-Message rechts, leuchtend gelb -->
-<a-entity billboard-y position="10 7 -14" scale="5 5 5">
-  <!-- Glow-Layer (größer, transparent) -->
-  <a-entity
-    troika-text="
-      value: Frohe Weihnachten Mama und Papa!\nNächstes Jahr besuchen wir zusammen\neine VR-Ausstellung des Machu Picchu!\nFrohes Erkunden :);
-      font: assets/fonts/MountainsofChristmas-Bold.ttf;
-      fontSize: 0.35;
-      maxWidth: 4.8;
-      letterSpacing: 0.02;
-      lineHeight: 1.25;
-      anchorX: left;
-      anchorY: top;
-      color: #FFD400;
-      outlineWidth: 0.03;
-      outlineColor: #FFD400;
-    "
-    material="shader: flat; transparent: true; opacity: 0.25; depthWrite: false; blending: additive"
-    scale="1.08 1.08 1.08">
+  <!-- TEXT HINTER DIR (umdrehen = 180°) -->
+  <a-entity position="12 7 16" rotation="0 180 0" scale="5 5 5">
+    <!-- Glow -->
+    <a-entity
+      troika-text="
+        value: Frohe Weihnachten Mama und Papa!\nNächstes Jahr besuchen wir zusammen\neine VR-Ausstellung des Machu Picchu!\nFrohes Erkunden :);
+        font: assets/fonts/MountainsofChristmas-Bold.ttf;
+        fontSize: 0.35;
+        maxWidth: 4.8;
+        letterSpacing: 0.02;
+        lineHeight: 1.25;
+        anchorX: left;
+        anchorY: top;
+        color: #FFD400;
+        outlineWidth: 0.03;
+        outlineColor: #FFD400;
+      "
+      material="shader: flat; transparent: true; opacity: 0.25; depthWrite: false; blending: additive"
+      scale="1.08 1.08 1.08">
+    </a-entity>
+
+    <!-- Front -->
+    <a-entity
+      troika-text="
+        value: Frohe Weihnachten Mama und Papa!\nNächstes Jahr besuchen wir zusammen\neine VR-Ausstellung des Machu Picchu!\nFrohes Erkunden :);
+        font: assets/fonts/MountainsofChristmas-Bold.ttf;
+        fontSize: 0.35;
+        maxWidth: 4.8;
+        letterSpacing: 0.02;
+        lineHeight: 1.25;
+        anchorX: left;
+        anchorY: top;
+        color: #FFD400;
+        outlineWidth: 0.006;
+        outlineColor: #000000;
+      "
+      material="shader: flat; transparent: true; opacity: 1; depthWrite: false">
+    </a-entity>
+
+    <a-light type="point" intensity="0.6" distance="12" color="#FFD400" position="0 0.2 0.6"></a-light>
   </a-entity>
 
-  <!-- Vorderer, scharfer Text -->
+  <!-- SCHNEEMANN -->
   <a-entity
-    troika-text="
-      value: Frohe Weihnachten Mama und Papa!\nNächstes Jahr besuchen wir zusammen\neine VR-Ausstellung des Machu Picchu!\nFrohes Erkunden :);
-      font: assets/fonts/MountainsofChristmas-Bold.ttf;
-      fontSize: 0.35;
-      maxWidth: 4.8;
-      letterSpacing: 0.02;
-      lineHeight: 1.25;
-      anchorX: left;
-      anchorY: top;
-      color: #FFD400;
-      outlineWidth: 0.006;
-      outlineColor: #000000;
-    "
-    material="shader: flat; transparent: true; opacity: 1; depthWrite: false">
+    id="snowman"
+    position="0 0 -10"
+    snowman-ai="radius: 14; speed: 1.5; minDist: 6"
+    snap-to-scene-floor="worldId: world; height: 30; offset: 0.02">
+
+    <a-entity
+      gltf-model="#snowmanModel"
+      fix-materials
+      ground-gltf="y: 0"
+      scale="12 12 12">
+    </a-entity>
+
   </a-entity>
-
-  <!-- kleines Licht für extra “glow” -->
-  <a-light type="point" intensity="0.6" distance="12" color="#FFD400" position="0 0.2 0.6"></a-light>
-</a-entity>
-
-  
-  <!-- SCHNEEMANN ;) -->
-<a-entity
-  id="snowman"
-  position="0 0 -10"
-  snowman-ai="radius: 14; speed: 1.5; minDist: 6">
-
-  <!-- Modell selbst wird nur "auf den Boden" gesetzt -->
-  <a-entity
-    gltf-model="#snowmanModel"
-    fix-materials
-    ground-gltf="y: -1"
-    scale="12 12 12">
-  </a-entity>
-
-</a-entity>
 
   <!-- SCHNEE -->
   <a-entity snow></a-entity>
