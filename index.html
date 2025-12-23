@@ -197,15 +197,20 @@ AFRAME.registerComponent('ground-gltf', {
   init() {
     this.el.addEventListener('model-loaded', () => {
       const obj = this.el.object3D;
+
+      // safe in allen THREE-Versionen
       obj.updateMatrixWorld(true);
 
       const box = new THREE.Box3().setFromObject(obj);
       const minY = box.min.y;
 
+      // Welt-Y auf Zielboden bringen
       obj.position.y += (this.data.y - minY);
+      console.log("minY", minY, "posY after", obj.position.y);
     });
   }
 });
+</script>
 
 </script>
 
@@ -221,7 +226,7 @@ AFRAME.registerComponent('ground-gltf', {
 <a-scene embedded vr-mode-ui="enabled: true">
 
   <a-assets>
-    <a-entity id="scene" gltf-model="#sceneGLB"></a-entity>
+    <a-asset-item id="sceneGLB" src="assets/Christmas.glb"></a-asset-item>
     <a-asset-item id="snowmanModel" src="assets/snowman.glb"></a-asset-item>
     <audio id="jinglebells" src="https://upload.wikimedia.org/wikipedia/commons/4/4e/JingleBells-Instrumental-.ogg"></audio>
   </a-assets>
@@ -235,21 +240,20 @@ AFRAME.registerComponent('ground-gltf', {
   </a-entity>
   
   <!-- SCHNEEMANN ;) -->
-<!-- SCHNEEMANN (Wrapper bewegt sich) -->
 <a-entity
   id="snowman"
-  position="0 0 -10"
+  position="0 0 -40"
   snowman-ai="radius: 14; speed: 1.5; minDist: 6">
 
+  <!-- Modell selbst wird nur "auf den Boden" gesetzt -->
   <a-entity
     gltf-model="#snowmanModel"
     fix-materials
-    ground-gltf="y: -1" 
+    ground-gltf="y: -1"
     scale="12 12 12">
   </a-entity>
 
 </a-entity>
-
 
   <!-- SCHNEE -->
   <a-entity snow></a-entity>
