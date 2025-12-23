@@ -241,6 +241,21 @@ AFRAME.registerComponent('snap-to-scene-floor', {
     obj.position.y = hits[0].point.y + this.data.offset;
   }
 });
+
+AFRAME.registerComponent('billboard-y', {
+  tick() {
+    const cam = this.el.sceneEl.camera;
+    if (!cam) return;
+
+    const obj = this.el.object3D;
+    const camPos = new THREE.Vector3();
+    cam.getWorldPosition(camPos);
+
+    camPos.y = obj.position.y; // nur um Y drehen
+    obj.lookAt(camPos);
+  }
+});
+
 </script>
 
 </head>
@@ -274,7 +289,8 @@ AFRAME.registerComponent('snap-to-scene-floor', {
   </a-entity>
 
   <!-- TEXT HINTER DIR (umdrehen = 180°) -->
-  <a-entity position="12 7 16" rotation="0 180 0" scale="5 5 5">
+<a-entity billboard-y position="20 7 16" scale="6 6 6">
+
     <!-- Glow -->
     <a-entity
       troika-text="
