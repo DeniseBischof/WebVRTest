@@ -192,21 +192,25 @@ AFRAME.registerComponent('fix-materials', {
 });
 
 AFRAME.registerComponent('ground-gltf', {
-  schema: { y: { type: 'number', default: 0 } }, // Zielbodenhöhe (optional)
+  schema: { y: { type: 'number', default: 0 } },
 
   init() {
     this.el.addEventListener('model-loaded', () => {
       const obj = this.el.object3D;
-      obj.updateWorldMatrix(true, true);
+
+      // safe in allen THREE-Versionen
+      obj.updateMatrixWorld(true);
 
       const box = new THREE.Box3().setFromObject(obj);
       const minY = box.min.y;
 
-      // minY ist Welt-Y. Position verschieben (Position wird nicht mit eigener Scale multipliziert)
+      // Welt-Y auf Zielboden bringen
       obj.position.y += (this.data.y - minY);
+      console.log("minY", minY, "posY after", obj.position.y);
     });
   }
 });
+</script>
 
 </script>
 
@@ -236,12 +240,20 @@ AFRAME.registerComponent('ground-gltf', {
   </a-entity>
   
   <!-- SCHNEEMANN ;) -->
+<a-entity
+  id="snowman"
+  position="0 0 -10"
+  snowman-ai="radius: 14; speed: 1.5; minDist: 6">
+
+  <!-- Modell selbst wird nur "auf den Boden" gesetzt -->
   <a-entity
     gltf-model="#snowmanModel"
     fix-materials
-      ground-gltf="y: 0"
+    ground-gltf="y: 0"
     scale="12 12 12">
   </a-entity>
+
+</a-entity>
 
   <!-- SCHNEE -->
   <a-entity snow></a-entity>
