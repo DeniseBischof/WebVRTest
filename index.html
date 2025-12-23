@@ -209,6 +209,7 @@
   >
     <a-assets>
       <audio id="jinglebells" preload="auto" crossorigin="anonymous" src="https://upload.wikimedia.org/wikipedia/commons/4/4e/JingleBells-Instrumental-.ogg"></audio>
+    <a-asset-item id="christmasModel" src="assets/Christmas.glb"></a-asset-item>
 
     </a-assets>
 
@@ -234,6 +235,15 @@
 
         <a-entity id="bgm"
           sound="src: #jinglebells; autoplay: false; loop: true; volume: 0.5"></a-entity>
+        
+          <a-entity
+          gltf-model="#christmasModel"
+          position="0 -1 -3"
+          rotation="0 180 0"
+          scale="1.2 1.2 1.2"
+          animation="property: rotation; dur: 20000; easing: linear; loop: true; to: 0 360 0">
+        </a-entity>
+
       </a-camera>
     </a-entity>
 
@@ -271,6 +281,7 @@
     text="value: Merry Christmas; align: center; anchor: center; baseline: center; width: 7.5; color: #00b140;"
     position="0 0.05 0">
   </a-entity>
+  
 
   <!-- Sparkles cluster instead of emoji text -->
   <a-entity position="0 -0.38 0" sparkles="count: 18; radius: 0.65;"></a-entity>
