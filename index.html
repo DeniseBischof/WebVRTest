@@ -75,6 +75,52 @@
         document.querySelector("#bgm").components.sound.playSound();
       };
     });
+
+    AFRAME.registerComponent('snowman-ai', {
+  schema: {
+    radius: { type: 'number', default: 4 },
+    speed:  { type: 'number', default: 0.6 }
+  },
+
+  init() {
+    this.camera = document.querySelector('[camera]');
+    this.target = new THREE.Vector3();
+    this.pickNewTarget();
+    this.timer = 0;
+  },
+
+  pickNewTarget() {
+    const r = this.data.radius;
+    this.target.set(
+      (Math.random() - 0.5) * r * 2,
+      this.el.object3D.position.y,
+      (Math.random() - 0.5) * r * 2
+    );
+  },
+
+  tick(time, delta) {
+    if (!this.camera) return;
+
+    const dt = delta / 1000;
+    const pos = this.el.object3D.position;
+
+    // move slowly toward target
+    pos.lerp(this.target, dt * this.data.speed);
+
+    // pick new random target every ~5–8s
+    this.timer += dt;
+    if (this.timer > 5 + Math.random() * 3) {
+      this.pickNewTarget();
+      this.timer = 0;
+    }
+
+    // ALWAYS look at player (but only Y-rotation → comfy VR)
+    const camPos = new THREE.Vector3();
+    this.camera.object3D.getWorldPosition(camPos);
+    camPos.y = pos.y;
+    this.el.object3D.lookAt(camPos);
+  }
+});
   </script>
 </head>
 
@@ -89,6 +135,7 @@
 
   <a-assets>
     <a-asset-item id="sceneGLB" src="assets/Christmas.glb"></a-asset-item>
+    <a-asset-item id="snowmanModel" src="assets/snowman.glb"></a-asset-item>
     <audio id="jinglebells" src="https://upload.wikimedia.org/wikipedia/commons/4/4e/JingleBells-Instrumental-.ogg"></audio>
   </a-assets>
 
@@ -99,6 +146,14 @@
     rotation="0 0 0"
     scale="1 1 1">
   </a-entity>
+  <!-- SCHNEEMANN ;) -->
+  <a-entity
+  gltf-model="#snowmanModel"
+  position="1 0 -2"
+  scale="0.8 0.8 0.8"
+  snowman-ai="radius: 5; speed: 0.4">
+  </a-entity>
+
 
   <!-- SCHNEE -->
   <a-entity snow></a-entity>
