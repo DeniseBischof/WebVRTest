@@ -108,20 +108,30 @@ window.addEventListener("DOMContentLoaded", () => {
 ========================= */
 AFRAME.registerComponent('snowman-ai', {
   schema: {
-    radius: { type: 'number', default: 12 }, // Laufkreis
-    speed:  { type: 'number', default: 0.6 }, // m/s
-    minDist:{ type: 'number', default: 5 }    // Abstand zum Spieler
+    radius: { type: 'number', default: 12 },
+    speed:  { type: 'number', default: 0.6 },
+    minDist:{ type: 'number', default: 5 }
   },
 
   init() {
     this.target = new THREE.Vector3();
     this.velocity = new THREE.Vector3();
-    this.pickNewTarget();
 
-    // Kamera sauber holen (nach Scene-Load)
-    this.el.sceneEl.addEventListener('loaded', () => {
-      this.camera = this.el.sceneEl.camera.el;
+    // Kamera zuverlässig bekommen:
+    const scene = this.el.sceneEl;
+
+    const setCam = (camEl) => { this.cameraEl = camEl; };
+
+    scene.addEventListener('camera-set-active', (e) => {
+      setCam(e.detail.cameraEl);
     });
+
+    scene.addEventListener('loaded', () => {
+      // Fallback: irgendeine Kamera im DOM
+      setCam(scene.querySelector('[camera]') || scene.querySelector('a-camera'));
+    });
+
+    this.pickNewTarget();
   },
 
   pickNewTarget() {
@@ -129,24 +139,24 @@ AFRAME.registerComponent('snowman-ai', {
     const a = Math.random() * Math.PI * 2;
     const d = this.data.minDist + Math.random() * (r - this.data.minDist);
 
+    // Ziel relativ zur aktuellen Position (wirkt natürlicher)
+    const obj = this.el.object3D;
     this.target.set(
-      Math.cos(a) * d,
-      this.el.object3D.position.y,
-      Math.sin(a) * d
+      obj.position.x + Math.cos(a) * d,
+      obj.position.y,
+      obj.position.z + Math.sin(a) * d
     );
   },
 
   tick(time, delta) {
-    if (!this.camera) return;
+    if (!this.cameraEl) return;
 
     const dt = delta / 1000;
     const obj = this.el.object3D;
 
-    // Richtung zum Ziel
     this.velocity.copy(this.target).sub(obj.position);
     const dist = this.velocity.length();
 
-    // Neues Ziel, wenn erreicht
     if (dist < 0.3) {
       this.pickNewTarget();
       return;
@@ -155,9 +165,9 @@ AFRAME.registerComponent('snowman-ai', {
     this.velocity.normalize();
     obj.position.addScaledVector(this.velocity, this.data.speed * dt);
 
-    // Spieler anschauen 
+    // Spieler anschauen
     const camPos = new THREE.Vector3();
-    this.camera.object3D.getWorldPosition(camPos);
+    this.cameraEl.object3D.getWorldPosition(camPos);
     camPos.y = obj.position.y;
     obj.lookAt(camPos);
   }
