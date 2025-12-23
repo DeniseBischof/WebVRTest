@@ -289,44 +289,53 @@ AFRAME.registerComponent('billboard-y', {
   </a-entity>
 
   <!-- TEXT HINTER DIR (umdrehen = 180°) -->
-<a-entity billboard-y position="0 7 12" scale="6 6 6">
+<a-entity billboard-y position="0 7 25" scale="6 6 6">
 
     <!-- Glow -->
-    <a-entity
-      troika-text="
-        value: Frohe Weihnachten Mama und Papa!\nNächstes Jahr besuchen wir zusammen\neine VR-Ausstellung des Machu Picchu!\nFrohes Erkunden :);
-        font: assets/fonts/MountainsofChristmas-Bold.ttf;
-        fontSize: 0.35;
-        maxWidth: 4.8;
-        letterSpacing: 0.02;
-        lineHeight: 1.25;
-        anchorX: left;
-        anchorY: top;
-        color: #FFD400;
-        outlineWidth: 0.03;
-        outlineColor: #FFD400;
-      "
-      material="shader: flat; transparent: true; opacity: 0.25; depthWrite: false; blending: additive"
-      scale="1.08 1.08 1.08">
-    </a-entity>
+ <a-plane
+    position="2.4 0.3 -0.06"
+    width="6.0"
+    height="4.4"
+    color="#000"
+    material="shader: flat; transparent: true; opacity: 0.22; depthWrite: false">
+  </a-plane>
 
-    <!-- Front -->
-    <a-entity
-      troika-text="
-        value: Frohe Weihnachten Mama und Papa!\nNächstes Jahr besuchen wir zusammen\neine VR-Ausstellung des Machu Picchu!\nFrohes Erkunden :);
-        font: assets/fonts/MountainsofChristmas-Bold.ttf;
-        fontSize: 0.35;
-        maxWidth: 4.8;
-        letterSpacing: 0.02;
-        lineHeight: 1.25;
-        anchorX: left;
-        anchorY: top;
-        color: #FFD400;
-        outlineWidth: 0.006;
-        outlineColor: #000000;
-      "
-      material="shader: flat; transparent: true; opacity: 1; depthWrite: false">
-    </a-entity>
+  <!-- Subtiler Glow (nicht so “fett”) -->
+  <a-entity
+    troika-text="
+      value: Frohe Weihnachten Mama und Papa!\nNächstes Jahr besuchen wir zusammen\neine VR-Ausstellung des Machu Picchu!\nFrohes Erkunden :);
+      font: assets/fonts/MountainsofChristmas-Bold.ttf;
+      fontSize: 0.35;
+      maxWidth: 5.2;
+      letterSpacing: 0.02;
+      lineHeight: 1.25;
+      anchorX: left;
+      anchorY: top;
+      color: #FFD400;
+      outlineWidth: 0.015;
+      outlineColor: #FFD400;
+    "
+    material="shader: flat; transparent: true; opacity: 0.16; depthWrite: false; blending: additive"
+    scale="1.03 1.03 1.03">
+  </a-entity>
+
+  <!-- Vorderer Text: leicht transparent, dünne Outline -->
+  <a-entity
+    troika-text="
+      value: Frohe Weihnachten Mama und Papa!\nNächstes Jahr besuchen wir zusammen\neine VR-Ausstellung des Machu Picchu!\nFrohes Erkunden :);
+      font: assets/fonts/MountainsofChristmas-Bold.ttf;
+      fontSize: 0.35;
+      maxWidth: 5.2;
+      letterSpacing: 0.02;
+      lineHeight: 1.25;
+      anchorX: left;
+      anchorY: top;
+      color: #FFD400;
+      outlineWidth: 0.006;
+      outlineColor: #000000;
+    "
+    material="shader: flat; transparent: true; opacity: 0.92; depthWrite: false">
+  </a-entity>
 
     <a-light type="point" intensity="0.6" distance="12" color="#FFD400" position="0 0.2 0.6"></a-light>
   </a-entity>
