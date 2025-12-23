@@ -212,7 +212,21 @@ AFRAME.registerComponent('ground-gltf', {
     });
   }
 });
-</script>
+
+AFRAME.registerComponent('billboard-y', {
+  tick() {
+    const cam = this.el.sceneEl.camera;
+    if (!cam) return;
+
+    const obj = this.el.object3D;
+    const camPos = new THREE.Vector3();
+    cam.getWorldPosition(camPos);
+
+    // nur um Y drehen (damit es nicht komisch kippt)
+    camPos.y = obj.position.y;
+    obj.lookAt(camPos);
+  }
+});
 
 </script>
 
@@ -233,6 +247,11 @@ AFRAME.registerComponent('ground-gltf', {
     <audio id="jinglebells" src="https://upload.wikimedia.org/wikipedia/commons/4/4e/JingleBells-Instrumental-.ogg"></audio>
   </a-assets>
 
+  <!-- Licht für PBR-Modelle -->
+  <a-entity light="type: ambient; intensity: 0.7; color: #fff"></a-entity>
+  <a-entity light="type: directional; intensity: 0.9; color: #fff" position="2 6 3"></a-entity>
+
+
   <!-- DIE SZENE -->
   <a-entity
     gltf-model="#sceneGLB"
@@ -242,7 +261,7 @@ AFRAME.registerComponent('ground-gltf', {
   </a-entity>
 
   <!-- Weihnachts-Message rechts, leuchtend gelb -->
-<a-entity position="15 6 -30" rotation="0 -30 0" scale="5 5 5">
+<a-entity billboard-y position="10 7 -14" scale="5 5 5">
   <!-- Glow-Layer (größer, transparent) -->
   <a-entity
     troika-text="
@@ -288,7 +307,7 @@ AFRAME.registerComponent('ground-gltf', {
   <!-- SCHNEEMANN ;) -->
 <a-entity
   id="snowman"
-  position="0 -4 -10"
+  position="0 0 -10"
   snowman-ai="radius: 14; speed: 1.5; minDist: 6">
 
   <!-- Modell selbst wird nur "auf den Boden" gesetzt -->
