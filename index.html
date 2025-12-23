@@ -210,6 +210,41 @@ AFRAME.registerComponent('ground-gltf', {
     });
   }
 });
+
+AFRAME.registerComponent('ground-to-scene', {
+  schema: { sceneId: { type: 'string', default: 'scene' } },
+
+  init() {
+    const sceneEl = this.el.sceneEl;
+    const sceneRoot = document.getElementById(this.data.sceneId);
+
+    const snap = () => {
+      const obj = this.el.object3D;
+      obj.updateMatrixWorld(true);
+
+      // Bodenhöhe aus Szene holen
+      const groundObj = sceneRoot?.object3D;
+      if (!groundObj) return;
+
+      groundObj.updateMatrixWorld(true);
+      const groundBox = new THREE.Box3().setFromObject(groundObj);
+      const groundY = groundBox.min.y;
+
+      // Schneemann unten bestimmen
+      const snowBox = new THREE.Box3().setFromObject(obj);
+      const snowMinY = snowBox.min.y;
+
+      // so verschieben, dass snowMinY == groundY
+      obj.position.y += (groundY - snowMinY);
+    };
+
+    // Wenn Modell geladen ist
+    this.el.addEventListener('model-loaded', snap);
+
+    // Wenn Szene-GLB geladen ist, nochmal snappen
+    sceneEl.addEventListener('loaded', () => setTimeout(snap, 0));
+  }
+});
 </script>
 
 </script>
@@ -226,7 +261,7 @@ AFRAME.registerComponent('ground-gltf', {
 <a-scene embedded vr-mode-ui="enabled: true">
 
   <a-assets>
-    <a-asset-item id="sceneGLB" src="assets/Christmas.glb"></a-asset-item>
+    <a-entity id="scene" gltf-model="#sceneGLB" position="0 0 0"></a-entity>
     <a-asset-item id="snowmanModel" src="assets/snowman.glb"></a-asset-item>
     <audio id="jinglebells" src="https://upload.wikimedia.org/wikipedia/commons/4/4e/JingleBells-Instrumental-.ogg"></audio>
   </a-assets>
@@ -249,7 +284,7 @@ AFRAME.registerComponent('ground-gltf', {
   <a-entity
     gltf-model="#snowmanModel"
     fix-materials
-    ground-gltf="y: -1"
+    ground-to-scene="sceneId: scene"
     scale="12 12 12">
   </a-entity>
 
