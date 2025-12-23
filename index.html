@@ -6,6 +6,8 @@
   <title>Merry Christmas VR</title>
 
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-troika-text/dist/aframe-troika-text.min.js"></script>
+
 
   <style>
     html, body {
@@ -238,6 +240,50 @@ AFRAME.registerComponent('ground-gltf', {
     rotation="0 0 0"
     scale="1 1 1">
   </a-entity>
+
+  <!-- Weihnachts-Message rechts, leuchtend gelb -->
+<a-entity position="3 1.7 -7" rotation="0 -18 0">
+  <!-- Glow-Layer (größer, transparent) -->
+  <a-entity
+    troika-text="
+      value: Frohe Weihnachten Mama und Papa!\nNächstes Jahr besuchen wir zusammen\neine VR-Ausstellung des Machu Picchu!\nFrohes Erkunden :);
+      font: assets/fonts/MountainsofChristmas-Bold.ttf;
+      fontSize: 0.35;
+      maxWidth: 4.8;
+      letterSpacing: 0.02;
+      lineHeight: 1.25;
+      anchorX: left;
+      anchorY: top;
+      color: #FFD400;
+      outlineWidth: 0.03;
+      outlineColor: #FFD400;
+    "
+    material="shader: flat; transparent: true; opacity: 0.25; depthWrite: false; blending: additive"
+    scale="1.08 1.08 1.08">
+  </a-entity>
+
+  <!-- Vorderer, scharfer Text -->
+  <a-entity
+    troika-text="
+      value: Frohe Weihnachten Mama und Papa!\nNächstes Jahr besuchen wir zusammen\neine VR-Ausstellung des Machu Picchu!\nFrohes Erkunden :);
+      font: assets/fonts/MountainsofChristmas-Bold.ttf;
+      fontSize: 0.35;
+      maxWidth: 4.8;
+      letterSpacing: 0.02;
+      lineHeight: 1.25;
+      anchorX: left;
+      anchorY: top;
+      color: #FFD400;
+      outlineWidth: 0.006;
+      outlineColor: #000000;
+    "
+    material="shader: flat; transparent: true; opacity: 1; depthWrite: false">
+  </a-entity>
+
+  <!-- kleines Licht für extra “glow” -->
+  <a-light type="point" intensity="0.6" distance="12" color="#FFD400" position="0 0.2 0.6"></a-light>
+</a-entity>
+
   
   <!-- SCHNEEMANN ;) -->
 <a-entity
