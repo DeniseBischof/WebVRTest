@@ -288,63 +288,24 @@ AFRAME.registerComponent('billboard-y', {
     scale="1 1 1">
   </a-entity>
 
-  <!-- TEXT HINTER DIR (umdrehen = 180°) -->
+
 <a-entity billboard-y position="0 7 25" scale="6 6 6">
 
-    <!-- Glow -->
- <a-plane
-    position="2.4 0.3 -0.06"
-    width="6.0"
-    height="4.4"
-    color="#000"
-    material="shader: flat; transparent: true; opacity: 0.22; depthWrite: false">
-  </a-plane>
-
-  <!-- Subtiler Glow (nicht so “fett”) -->
-  <a-entity billboard-y position="0 7 18" scale="5 5 5">
-
-  <!-- optional: ganz zartes Backboard -->
-  <a-plane
-    position="2.4 0.3 -0.08"
-    width="6.0"
-    height="4.4"
-    color="#000"
-    material="shader: flat; transparent: true; opacity: 0.18; depthWrite: false">
-  </a-plane>
-
-  <!-- Shadow (dunkel, minimal versetzt) -->
+  <!-- Shadow (nur ein bisschen, für Lesbarkeit) -->
   <a-entity
-    position="0.04 -0.04 -0.02"
+    position="0.035 -0.035 -0.02"
     troika-text="
       value: Frohe Weihnachten Mama und Papa!\nNächstes Jahr besuchen wir zusammen\neine VR-Ausstellung des Machu Picchu!\nFrohes Erkunden :);
       font: assets/fonts/MountainsofChristmas-Bold.ttf;
       fontSize: 0.35;
       maxWidth: 5.2;
-      letterSpacing: 0.02;
+      letterSpacing: 0.03;
       lineHeight: 1.25;
       anchorX: left;
       anchorY: top;
       color: #000000;
     "
     material="shader: flat; transparent: true; opacity: 0.55; depthWrite: false">
-  </a-entity>
-
-  <!-- Glow (subtil, ohne Outline) -->
-  <a-entity
-    position="0 0 -0.03"
-    troika-text="
-      value: Frohe Weihnachten Mama und Papa!\nNächstes Jahr besuchen wir zusammen\neine VR-Ausstellung des Machu Picchu!\nFrohes Erkunden :);
-      font: assets/fonts/MountainsofChristmas-Bold.ttf;
-      fontSize: 0.35;
-      maxWidth: 5.2;
-      letterSpacing: 0.02;
-      lineHeight: 1.25;
-      anchorX: left;
-      anchorY: top;
-      color: #FFD400;
-    "
-    material="shader: flat; transparent: true; opacity: 0.14; depthWrite: false; blending: additive"
-    scale="1.02 1.02 1.02">
   </a-entity>
 
   <!-- Front (clean) -->
@@ -354,7 +315,7 @@ AFRAME.registerComponent('billboard-y', {
       font: assets/fonts/MountainsofChristmas-Bold.ttf;
       fontSize: 0.35;
       maxWidth: 5.2;
-      letterSpacing: 0.02;
+      letterSpacing: 0.03;
       lineHeight: 1.25;
       anchorX: left;
       anchorY: top;
@@ -365,8 +326,6 @@ AFRAME.registerComponent('billboard-y', {
 
 </a-entity>
 
-    <a-light type="point" intensity="0.6" distance="12" color="#FFD400" position="0 0.2 0.6"></a-light>
-  </a-entity>
 
   <!-- SCHNEEMANN -->
   <a-entity
