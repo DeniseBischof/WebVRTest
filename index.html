@@ -76,49 +76,60 @@
       };
     });
 
-    AFRAME.registerComponent('snowman-ai', {
+AFRAME.registerComponent('snowman-ai', {
   schema: {
-    radius: { type: 'number', default: 4 },
-    speed:  { type: 'number', default: 0.6 }
+    radius: { default: 4 },
+    speed:  { default: 0.6 }
   },
 
   init() {
     this.camera = document.querySelector('[camera]');
-    this.target = new THREE.Vector3();
-    this.pickNewTarget();
-    this.timer = 0;
+    this.velocity = new THREE.Vector3();
+    this.pickTarget();
+
+    // FIX: force opaque materials
+    this.el.addEventListener('model-loaded', e => {
+      e.detail.model.traverse(n => {
+        if (n.material) {
+          n.material.transparent = false;
+          n.material.opacity = 1;
+          n.material.depthWrite = true;
+        }
+      });
+    });
   },
 
-  pickNewTarget() {
+  pickTarget() {
     const r = this.data.radius;
-    this.target.set(
+    this.target = new THREE.Vector3(
       (Math.random() - 0.5) * r * 2,
       this.el.object3D.position.y,
       (Math.random() - 0.5) * r * 2
     );
   },
 
-  tick(time, delta) {
+  tick(_, delta) {
     if (!this.camera) return;
 
     const dt = delta / 1000;
-    const pos = this.el.object3D.position;
+    const obj = this.el.object3D;
 
-    // move slowly toward target
-    pos.lerp(this.target, dt * this.data.speed);
+    // REAL movement (not lerp hell)
+    const dir = new THREE.Vector3().subVectors(this.target, obj.position);
+    const dist = dir.length();
 
-    // pick new random target every ~5–8s
-    this.timer += dt;
-    if (this.timer > 5 + Math.random() * 3) {
-      this.pickNewTarget();
-      this.timer = 0;
+    if (dist < 0.3) {
+      this.pickTarget();
+    } else {
+      dir.normalize();
+      obj.position.addScaledVector(dir, dt * this.data.speed);
     }
 
-    // ALWAYS look at player (but only Y-rotation → comfy VR)
+    // Look at player (Y only = no nausea)
     const camPos = new THREE.Vector3();
     this.camera.object3D.getWorldPosition(camPos);
-    camPos.y = pos.y;
-    this.el.object3D.lookAt(camPos);
+    camPos.y = obj.position.y;
+    obj.lookAt(camPos);
   }
 });
   </script>
@@ -146,14 +157,15 @@
     rotation="0 0 0"
     scale="1 1 1">
   </a-entity>
+  
   <!-- SCHNEEMANN ;) -->
   <a-entity
-  gltf-model="#snowmanModel"
-  position="1 0 -2"
-  scale="0.8 0.8 0.8"
-  snowman-ai="radius: 5; speed: 0.4">
+    id="snowman"
+    gltf-model="#snowmanModel"
+    position="0 0 -2"
+    scale="3 3 3"
+    snowman-ai>
   </a-entity>
-
 
   <!-- SCHNEE -->
   <a-entity snow></a-entity>
