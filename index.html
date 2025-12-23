@@ -108,57 +108,60 @@ window.addEventListener("DOMContentLoaded", () => {
 ========================= */
 AFRAME.registerComponent('snowman-ai', {
   schema: {
-    radius:  { type: 'number', default: 10 }, // Laufbereich
-    speed:   { type: 'number', default: 0.8 },// m/s
-    minDist: { type: 'number', default: 4 }   // Abstand zum Player
+    radius: { type: 'number', default: 12 }, // Laufkreis
+    speed:  { type: 'number', default: 0.6 }, // m/s
+    minDist:{ type: 'number', default: 5 }    // Abstand zum Spieler
   },
 
   init() {
-    this.camera = document.querySelector('[camera]');
     this.target = new THREE.Vector3();
-    this.direction = new THREE.Vector3();
-
+    this.velocity = new THREE.Vector3();
     this.pickNewTarget();
+
+    // Kamera sauber holen (nach Scene-Load)
+    this.el.sceneEl.addEventListener('loaded', () => {
+      this.camera = this.el.sceneEl.camera.el;
+    });
   },
 
   pickNewTarget() {
-    const angle = Math.random() * Math.PI * 2;
-    const distance =
-      this.data.minDist +
-      Math.random() * (this.data.radius - this.data.minDist);
+    const r = this.data.radius;
+    const a = Math.random() * Math.PI * 2;
+    const d = this.data.minDist + Math.random() * (r - this.data.minDist);
 
     this.target.set(
-      Math.cos(angle) * distance,
+      Math.cos(a) * d,
       this.el.object3D.position.y,
-      Math.sin(angle) * distance
+      Math.sin(a) * d
     );
   },
 
-  tick(_, delta) {
+  tick(time, delta) {
     if (!this.camera) return;
 
     const dt = delta / 1000;
     const obj = this.el.object3D;
 
-    this.direction.copy(this.target).sub(obj.position);
-    const dist = this.direction.length();
+    // Richtung zum Ziel
+    this.velocity.copy(this.target).sub(obj.position);
+    const dist = this.velocity.length();
 
-    if (dist < 0.25) {
+    // Neues Ziel, wenn erreicht
+    if (dist < 0.3) {
       this.pickNewTarget();
       return;
     }
 
-    this.direction.normalize();
-    obj.position.addScaledVector(this.direction, this.data.speed * dt);
+    this.velocity.normalize();
+    obj.position.addScaledVector(this.velocity, this.data.speed * dt);
 
-    // Look at player (nur Y-Achse → VR-safe)
+    // Spieler anschauen 
     const camPos = new THREE.Vector3();
     this.camera.object3D.getWorldPosition(camPos);
     camPos.y = obj.position.y;
     obj.lookAt(camPos);
   }
 });
-
 
 /* =========================
    🧱 FIX GLB MATERIAL
@@ -177,6 +180,23 @@ AFRAME.registerComponent('fix-materials', {
     });
   }
 });
+
+AFRAME.registerComponent('ground-gltf', {
+  init() {
+    this.el.addEventListener('model-loaded', () => {
+      const mesh = this.el.getObject3D('mesh');
+      if (!mesh) return;
+
+      // Bounding Box berechnen
+      const box = new THREE.Box3().setFromObject(mesh);
+      const minY = box.min.y;
+
+      // So verschieben, dass "unten" auf y=0 liegt
+      mesh.position.y -= minY;
+    });
+  }
+});
+
 </script>
 
 </head>
@@ -205,17 +225,10 @@ AFRAME.registerComponent('fix-materials', {
   </a-entity>
   
   <!-- SCHNEEMANN ;) -->
-<!-- Wrapper weil GLBs sind doof -->
-<a-entity
-  id="snowman"
-  position="0 0 -10"
-  snowman-ai="radius: 14; speed: 1.0; minDist: 6">
-
-  <!-- eigentliche GLB -->
   <a-entity
     gltf-model="#snowmanModel"
     fix-materials
-    position="0 -1.2 0"
+    ground-gltf
     scale="12 12 12">
   </a-entity>
 
